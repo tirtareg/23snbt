@@ -406,7 +406,7 @@ row
 
 ```{r}
 data <- db %>%
-  group_by(fakultas, prodi) %>%
+  group_by(fakultas, kode_prodi, prodi) %>%
   summarize(pendaftar = max(peminat),
             lulus = n(),
             sudah = sum(registrasi == "registrasi", na.rm = T),
