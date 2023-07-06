@@ -21,6 +21,7 @@ Sys.setlocale("LC_TIME", "IND")
 library(readxl)
 
 db <- read_excel("data.xlsx", sheet = "data")
+peminat <- read_excel("311_Statistik_Keketatan_Prodi.xlsx")
 
 library(tidyverse)
 
@@ -460,6 +461,60 @@ data %>%
     has_icon = TRUE,
     icon = "fa fa-save"
   )
+```
+
+row
+---
+
+### **Progres registrasi di setiap Jenjang**
+
+```{r}
+data <- db %>%
+  group_by(fakultas, prodi, kode_prodi) %>%
+  summarize(lulus = n(),
+            sudah = sum(registrasi == "registrasi", na.rm = T),
+            belum = lulus - sudah,
+            diterima = sum(nim == "diterima", na.rm = T))
+data <- data %>%
+  left_join(peminat[,c(4,2,5)], by = c("kode_prodi" = "kode")) %>%
+  arrange(fakultas, desc(jenjang))
+
+data <- data %>%
+  group_by(jenjang) %>%
+  summarise(minat = sum(peminat),
+            lulus = sum(lulus),
+            sudah = sum(sudah),
+            belum = sum(belum),
+            diterima = sum(diterima))
+
+data <- adorn_totals(data,where = "row", name = "Total")
+data$pers_sudah <- round(data$sudah / data$lulus * 100, 0)
+data$pers_belum <- round(data$belum / data$lulus * 100, 0)
+data$pers_lulus <- round(data$lulus / data$minat * 100, 0)
+
+data <- data %>%
+  select(jenjang, minat, lulus, pers_lulus, sudah, belum, pers_sudah, pers_belum, diterima)
+
+
+names(data) <- c("Jenjang", "Peminat", "Lulus", "% Lulus", "Sudah", "Belum", "Sudah (%)", "Belum (%)", "Diterima")
+
+kable(data, row.names = F) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F,
+                latex_options = "scale_down") %>%
+  add_header_above(c(" " = 4, "Registrasi" = 4, " " = 1)) 
+
+
+data %>%
+  download_this(
+    output_name = "progres_reg_per_jenjang",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+
+
 ```
 
 row
