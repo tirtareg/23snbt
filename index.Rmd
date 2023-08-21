@@ -529,7 +529,9 @@ data <- db %>%
             lulus = n(),
             sudah = sum(registrasi == "registrasi", na.rm = T),
             belum = lulus - sudah,
-            diterima = sum(nim == "diterima", na.rm = T))
+            diterima = sum(nim == "diterima", na.rm = T)) %>%
+  arrange(fakultas, desc(jenjang), prodi)
+
 n_fak <- data %>%
   group_by(fakultas) %>%
   summarise(n = n()) %>%
